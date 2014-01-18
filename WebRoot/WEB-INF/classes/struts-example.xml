@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC    
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"    
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+	<package name="modulename" extends="default">
+		<action name="example/*" method="{1}" class="exampleAction">
+			<result name="success">/jsp/example/example.jsp</result>
+			<result name="save">/jsp/example/save.jsp</result>
+			<result name="delete">/jsp/example/delete.jsp</result>
+			<result name="update">/jsp/example/update.jsp</result>
+			<result name="query">/jsp/example/query.jsp</result>
+		</action>
+	</package>
+</struts>

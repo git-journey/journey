@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+	<beans 
+		xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:p="http://www.springframework.org/schema/p" 
+		xmlns:tx="http://www.springframework.org/schema/tx" 
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans  
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+		http://www.springframework.org/schema/aop  
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"> 
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.SQLServerDialect
+				</prop>
+				<prop key="hibernate.show_sql">false</prop> 
+				<prop key="hibernate.format_sql">true</prop> 
+				<prop key="hibernate.hbm2ddl.auto">update</prop>  
+				<prop key="jdbc.use_scrollable_resultset">false</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
+			</props>
+		</property>
+		<!-- 表映射资源 -->
+		<property  name ="packagesToScan"  value ="com.jo.*.*" /> 
+	</bean>
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+	<!-- DB 连接配置 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+   		<property name="driverClass" value="${jdbc.driverClass}" />
+   		<property name="jdbcUrl" value="${jdbc.jdbcUrl}" />
+   		<property name="user" value="${jdbc.user}" />
+   		<property name="password" value="${jdbc.password}" />
+   		<property name="minPoolSize" value="${jdbc.miniPoolSize}" />
+   		<property name="maxPoolSize" value="${jdbc.maxPoolSize}"/>  
+   		<property name="initialPoolSize" value="${jdbc.initialPoolSize}"/>
+   		<property name="maxIdleTime" value="${jdbc.maxIdleTime}"/>
+   		<property name="acquireIncrement" value="${jdbc.acquireIncrement}"/>
+   		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts}"/>
+   		<property name="acquireRetryDelay" value="${jdbc.acquireRetryDelay}"/>
+   		<property name="testConnectionOnCheckin" value="${jdbc.testConnectionOnCheckin}"/>
+   		<property name="automaticTestTable" value="${jdbc.automaticTestTable}"/>
+   		<property name="idleConnectionTestPeriod" value="${jdbc.idleConnectionTestPeriod}"/>
+   		<property name="checkoutTimeout" value="${jdbc.checkoutTimeout}"/>
+	</bean>
+	<bean id="txManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager" >  
+		<property name="sessionFactory"><ref bean="sessionFactory"/></property> 
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+   		<tx:attributes>
+     		<tx:method name="get*" read-only="true" propagation="REQUIRED"/>
+     		<tx:method name="query*" read-only="true" propagation="REQUIRED"/>
+      		<tx:method name="find*" read-only="true" propagation="REQUIRED"/>
+      		<tx:method name="save*" propagation="REQUIRED"/>
+      		<tx:method name="update*" propagation="REQUIRED"/>
+      		<tx:method name="remove*" propagation="REQUIRED"/>
+      		<tx:method name="add*" propagation="REQUIRED"/>
+      		<!--默认其他方法都是REQUIRED-->
+      		<tx:method name="*"/>
+   			</tx:attributes>
+	</tx:advice>
+	<aop:config proxy-target-class="true"> 
+		<aop:advisor advice-ref="txAdvice" pointcut="execution(* com.*.*.dao.*.*(..))" /> 
+	</aop:config> 
+	<context:component-scan base-package="com"></context:component-scan>
+</beans>
